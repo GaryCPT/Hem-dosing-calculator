@@ -89,27 +89,6 @@
             color: #D61C4E;
             font-weight: bold;
         }
-        /* 響應式設計 */
-        @media (max-width: 480px) {
-            h1 {
-                font-size: 22px;
-            }
-            .container {
-                padding: 15px;
-            }
-            input[type="number"] {
-                font-size: 14px;
-                padding: 10px;
-            }
-            button {
-                font-size: 16px;
-                padding: 12px;
-            }
-            .result {
-                font-size: 14px;
-                padding: 12px;
-            }
-        }
     </style>
 </head>
 <body>
@@ -128,7 +107,6 @@
         <button onclick="resetForm()" style="background-color: #004E89; margin-top: 10px;">重新計算</button>
 
         <div id="result" class="result"></div>
-        <button onclick="copyResult()" id="copyBtn" style="display:none; background-color: #008CBA; margin-top: 10px;">複製計算結果</button>
     </div>
 
     <script>
@@ -160,14 +138,28 @@
                 return;
             }
 
-            const loadingDose = 3 * weight;
+            const loadingDose = 3 * weight; // 每週 3mg/kg，負荷期 4 週
+            const weeklyDose = 1.5 * weight; // 每週維持劑量
+            const biweeklyDose = 3 * weight; // 每兩週維持劑量
+            const monthlyDose = 6 * weight; // 每四週維持劑量
+
+            // 計算一年用量
+            const totalLoadingDose = loadingDose * 4;
+            const totalWeeklyDose = weeklyDose * 48;
+            const totalBiweeklyDose = biweeklyDose * 24;
+            const totalMonthlyDose = monthlyDose * 12;
+
             let html = `<div class="section-title">計算結果</div>
                         <p><strong>病人體重：</strong> ${weight} kg</p>
                         <p><strong>可用劑型：</strong> ${use30 ? "30mg, " : ""}${use60 ? "60mg" : ""}</p>
-                        <p>負荷期（每週 3 mg/kg，連續 4 週）： <span class="highlight">${loadingDose.toFixed(1)} mg</span></p>`;
+                        <h3>負荷期（最初 4 週，每週 3 mg/kg）</h3>
+                        <p>總劑量：<span class="highlight">${totalLoadingDose.toFixed(1)} mg</span></p>
+                        <h3>維持期劑量</h3>
+                        <p>每週方案（1.5 mg/kg）：<span class="highlight">${totalWeeklyDose.toFixed(1)} mg / 年</span></p>
+                        <p>每兩週方案（3 mg/kg）：<span class="highlight">${totalBiweeklyDose.toFixed(1)} mg / 年</span></p>
+                        <p>每四週方案（6 mg/kg）：<span class="highlight">${totalMonthlyDose.toFixed(1)} mg / 年</span></p>`;
 
             document.getElementById("result").innerHTML = html;
-            document.getElementById("copyBtn").style.display = "block";
         }
 
         function resetForm() {
@@ -175,16 +167,6 @@
             document.getElementById("vial30").checked = true;
             document.getElementById("vial60").checked = true;
             document.getElementById("result").innerHTML = "";
-            document.getElementById("copyBtn").style.display = "none";
-        }
-
-        function copyResult() {
-            const resultText = document.getElementById("result").innerText;
-            navigator.clipboard.writeText(resultText).then(() => {
-                alert("計算結果已複製到剪貼簿");
-            }).catch(err => {
-                alert("複製失敗，請手動選取內容複製");
-            });
         }
     </script>
 </body>
