@@ -174,21 +174,31 @@
                 return Object.entries(obj).map(([mg, count]) => `<span class="highlight">${count} 瓶 × ${mg}mg</span>`).join(" + ");
             }
 
+            let totalVialCount = { 30: 0, 60: 0 };
+            let addVials = (obj) => {
+                Object.entries(obj).forEach(([mg, count]) => {
+                    totalVialCount[mg] = (totalVialCount[mg] || 0) + count;
+                });
+            };
+
             let html = `<div class="section-title">計算結果</div>
                         <p><strong>病人體重：</strong> ${weight} kg</p>
                         <h3>負荷期（最初 4 週，每週 3 mg/kg）</h3>
-                        <p>總劑量：${totalLoadingDose.toFixed(1)} mg，需用：${formatVialCount(calculateVials(totalLoadingDose))}</p>
-                        <h3>維持期</h3>
-                        <p>每週方案：${formatVialCount(calculateVials(weeklyDose))}，每年 48 次</p>
-                        <p>每兩週方案：${formatVialCount(calculateVials(biweeklyDose))}，每年 24 次</p>
-                        <p>每四週方案：${formatVialCount(calculateVials(monthlyDose))}，每年 12 次</p>`;
+                        <p>總劑量：${totalLoadingDose.toFixed(1)} mg</p>
+                        <p>每週施打：${loadingDose.toFixed(1)} mg，使用：${formatVialCount(calculateVials(loadingDose))}</p>`;
+
+            let weeklyVials = calculateVials(weeklyDose);
+            let biweeklyVials = calculateVials(biweeklyDose);
+            let monthlyVials = calculateVials(monthlyDose);
+            addVials(weeklyVials);
+            addVials(biweeklyVials);
+            addVials(monthlyVials);
+
+            html += `<h3>全年總瓶數</h3>
+                     <p>30mg 瓶數：${totalVialCount[30]}</p>
+                     <p>60mg 瓶數：${totalVialCount[60]}</p>`;
 
             document.getElementById("result").innerHTML = html;
-        }
-
-        function resetForm() {
-            document.getElementById("weight").value = "";
-            document.getElementById("result").innerHTML = "";
         }
     </script>
 </body>
