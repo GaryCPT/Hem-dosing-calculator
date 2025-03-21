@@ -89,6 +89,12 @@
             color: #D61C4E;
             font-weight: bold;
         }
+        hr {
+            border: none;
+            height: 2px;
+            background: #E87722;
+            margin: 10px 0;
+        }
     </style>
 </head>
 <body>
@@ -154,32 +160,25 @@
                 return totalVials;
             }
 
-            let loadingVials = calculateVials(loadingDose, 1);
-            let totalLoadingVials = calculateVials(loadingDose, 4);
             let weeklyVials = calculateVials(weeklyDose, 48);
             let biweeklyVials = calculateVials(biweeklyDose, 24);
             let monthlyVials = calculateVials(monthlyDose, 12);
 
-            function formatVialString(vials) {
-                return `${vials[30] || 0} 瓶 × 30mg + ${vials[60] || 0} 瓶 × 60mg`;
-            }
-
-            let html = `<p><strong>病人體重：</strong> ${weight} kg</p>
+            let html = `<p><strong>病人體重：</strong> ${weight} kg</p><hr>
                         <h3>負荷期（最初 4 週，每週 3 mg/kg）</h3>
-                        <p>每週施打：${formatVialString(loadingVials)}</p>
-                        <p>4 週共：${formatVialString(totalLoadingVials)}</p>
+                        <p>每週施打：_ 瓶 × 30mg + _ 瓶 × 60mg</p>
+                        <p>4 週共：_ 瓶 × 30mg + _ 瓶 × 60mg</p><hr>
                         <h3>維持期</h3>
-                        <p>每週方案：${formatVialString(weeklyVials)}，每年 48 次</p>
-                        <p>每兩週方案：${formatVialString(biweeklyVials)}，每年 24 次</p>
-                        <p>每四週方案：${formatVialString(monthlyVials)}，每年 12 次</p>`;
+                        <p>每週方案：_ 瓶 × 30mg + _ 瓶 × 60mg，每年 48 次</p>
+                        <p>每兩週方案：_ 瓶 × 30mg + _ 瓶 × 60mg，每年 24 次</p>
+                        <p>每四週方案：_ 瓶 × 30mg + _ 瓶 × 60mg，每年 12 次</p><hr>
+                        <h3>全年總量</h3>
+                        <p>每週方案: _ 瓶 × 30mg + _ 瓶 × 60mg</p>
+                        <p>每兩週方案: _ 瓶 × 30mg + _ 瓶 × 60mg</p>
+                        <p>每四週方案: _ 瓶 × 30mg + _ 瓶 × 60mg</p>`;
 
             document.getElementById("result").innerHTML = html;
             document.getElementById("copyBtn").style.display = "block";
-        }
-
-        function copyResult() {
-            navigator.clipboard.writeText(document.getElementById("result").innerText);
-            alert("計算結果已複製");
         }
     </script>
 </body>
