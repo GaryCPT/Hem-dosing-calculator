@@ -6,9 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hemlibra 劑量計算器</title>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: 'Arial', sans-serif;
+            font-family: 'Noto Sans TC', sans-serif;
             background-color: #F9F7F3;
             color: #002A5E;
             margin: 0;
@@ -18,14 +19,14 @@
         .container {
             background: white;
             padding: 20px;
-            border-radius: 10px;
+            border-radius: 12px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             max-width: 500px;
             margin: auto;
         }
         h1 {
             color: #E87722;
-            font-size: 26px;
+            font-size: 28px;
             font-weight: bold;
             margin-bottom: 10px;
         }
@@ -35,6 +36,15 @@
             margin-bottom: 20px;
             font-weight: bold;
         }
+        .section-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #004E89;
+            margin-top: 15px;
+            border-bottom: 2px solid #E87722;
+            padding-bottom: 5px;
+            text-align: left;
+        }
         label {
             font-size: 18px;
             display: block;
@@ -43,19 +53,19 @@
         }
         input[type="number"] {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             font-size: 16px;
             border: 2px solid #004E89;
-            border-radius: 5px;
+            border-radius: 6px;
             margin-top: 5px;
         }
         button {
             background-color: #E87722;
             color: white;
             border: none;
-            padding: 12px 20px;
+            padding: 14px 20px;
             font-size: 18px;
-            border-radius: 5px;
+            border-radius: 8px;
             cursor: pointer;
             margin-top: 15px;
             width: 100%;
@@ -68,23 +78,14 @@
             margin-top: 20px;
             text-align: left;
             font-size: 16px;
-            background-color: #E3F2FD;
-            padding: 15px;
-            border-radius: 8px;
-            border-left: 6px solid #004E89;
+            background-color: #FFF3E0;
+            padding: 18px;
+            border-radius: 10px;
+            border-left: 6px solid #E87722;
         }
         .highlight {
             color: #D61C4E;
             font-weight: bold;
-        }
-        .section-title {
-            font-size: 20px;
-            font-weight: bold;
-            color: #004E89;
-            margin-top: 15px;
-            border-bottom: 2px solid #E87722;
-            padding-bottom: 5px;
-            text-align: left;
         }
     </style>
 </head>
