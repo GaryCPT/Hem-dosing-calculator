@@ -123,9 +123,12 @@
 
         <div class="section-title">步驟二：請輸入病人體重（公斤）</div>
         <input type="number" id="weight" placeholder="例如：70" min="1" step="0.1">
+
         <button onclick="calculate()">計算劑量</button>
+        <button onclick="resetForm()" style="background-color: #004E89; margin-top: 10px;">重新計算</button>
 
         <div id="result" class="result"></div>
+        <button onclick="copyResult()" id="copyBtn" style="display:none; background-color: #008CBA; margin-top: 10px;">複製計算結果</button>
     </div>
 
     <script>
@@ -158,51 +161,30 @@
             }
 
             const loadingDose = 3 * weight;
-            const maintenanceOptions = [
-                { name: "每週", dose: 1.5 * weight },
-                { name: "每兩週", dose: 3 * weight },
-                { name: "每四週", dose: 6 * weight }
-            ];
-
-            const availableVials = [];
-            if (use30) availableVials.push(30);
-            if (use60) availableVials.push(60);
-            availableVials.sort((a, b) => b - a);
-
-            function getVialCombination(dose) {
-                let remaining = dose;
-                let vialCount = {};
-                let totalDose = 0;
-                for (let vial of availableVials) {
-                    let count = Math.floor(remaining / vial);
-                    if (count > 0) {
-                        vialCount[vial] = count;
-                        remaining -= count * vial;
-                        totalDose += count * vial;
-                    }
-                }
-                if (remaining > 0) {
-                    const smallest = availableVials[availableVials.length - 1];
-                    vialCount[smallest] = (vialCount[smallest] || 0) + 1;
-                    totalDose += smallest;
-                }
-                return {
-                    combination: vialCount,
-                    totalDose: totalDose,
-                    waste: totalDose - dose,
-                    totalVials: Object.values(vialCount).reduce((a, b) => a + b, 0)
-                };
-            }
-
-            function formatCombo(obj) {
-                return Object.entries(obj).map(([mg, count]) => `<span class="highlight">${count} 瓶 × ${mg}mg</span>`).join(" + ");
-            }
-
             let html = `<div class="section-title">計算結果</div>
                         <p><strong>病人體重：</strong> ${weight} kg</p>
-                        <p><strong>可用劑型：</strong> ${availableVials.join("mg, ")}mg</p>`;
+                        <p><strong>可用劑型：</strong> ${use30 ? "30mg, " : ""}${use60 ? "60mg" : ""}</p>
+                        <p>負荷期（每週 3 mg/kg，連續 4 週）： <span class="highlight">${loadingDose.toFixed(1)} mg</span></p>`;
 
             document.getElementById("result").innerHTML = html;
+            document.getElementById("copyBtn").style.display = "block";
+        }
+
+        function resetForm() {
+            document.getElementById("weight").value = "";
+            document.getElementById("vial30").checked = true;
+            document.getElementById("vial60").checked = true;
+            document.getElementById("result").innerHTML = "";
+            document.getElementById("copyBtn").style.display = "none";
+        }
+
+        function copyResult() {
+            const resultText = document.getElementById("result").innerText;
+            navigator.clipboard.writeText(resultText).then(() => {
+                alert("計算結果已複製到剪貼簿");
+            }).catch(err => {
+                alert("複製失敗，請手動選取內容複製");
+            });
         }
     </script>
 </body>
