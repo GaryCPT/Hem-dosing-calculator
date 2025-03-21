@@ -4,10 +4,12 @@
 <head>
     <meta charset="UTF-8">
     <title>Hemlibra 劑量計算器</title>
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 </head>
 <body>
     <h1>Hemlibra 劑量計算器</h1>
-    
+    <p id="welcome" style="font-weight:bold; color:green;"></p>
+
     <p><strong>步驟一：請勾選您院內可用的劑型（mg/支）</strong></p>
     <label><input type="checkbox" id="vial30" checked> 30 mg</label>
     <label><input type="checkbox" id="vial60" checked> 60 mg</label>
@@ -19,6 +21,20 @@
     <div id="result"></div>
 
     <script>
+        async function initializeLiff() {
+            await liff.init({ liffId: "1657057076-lRRXkP1k" });
+            if (!liff.isLoggedIn()) {
+                liff.login();
+            } else {
+                const profile = await liff.getProfile();
+                document.getElementById("welcome").innerText = `歡迎您，${profile.displayName}！`;
+            }
+        }
+
+        window.onload = () => {
+            initializeLiff();
+        };
+
         function calculate() {
             const weight = parseFloat(document.getElementById("weight").value);
             const use30 = document.getElementById("vial30").checked;
