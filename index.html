@@ -144,59 +144,42 @@
             const monthlyDose = 6 * weight;
 
             const totalLoadingDose = loadingDose * 4;
-            const totalWeeklyDose = weeklyDose * 48;
-            const totalBiweeklyDose = biweeklyDose * 24;
-            const totalMonthlyDose = monthlyDose * 12;
 
             function calculateVials(dose) {
                 let remaining = dose;
-                let vialCount = {};
-                const availableVials = [];
-                if (use60) availableVials.push(60);
-                if (use30) availableVials.push(30);
-                availableVials.sort((a, b) => b - a);
-
-                for (let vial of availableVials) {
-                    let count = Math.floor(remaining / vial);
-                    if (count > 0) {
-                        vialCount[vial] = count;
-                        remaining -= count * vial;
-                    }
-                }
-                if (remaining > 0) {
-                    const smallest = availableVials[availableVials.length - 1];
-                    vialCount[smallest] = (vialCount[smallest] || 0) + 1;
-                }
+                let vialCount = {30: 0, 60: 0};
+                if (use60) vialCount[60] = Math.floor(remaining / 60);
+                remaining -= vialCount[60] * 60;
+                if (use30) vialCount[30] = Math.ceil(remaining / 30);
                 return vialCount;
             }
 
-            function formatVialCount(obj) {
-                return Object.entries(obj).map(([mg, count]) => `<span class="highlight">${count} 瓶 × ${mg}mg</span>`).join(" + ");
-            }
-
-            let totalVialCount = { 30: 0, 60: 0 };
-            let addVials = (obj) => {
-                Object.entries(obj).forEach(([mg, count]) => {
-                    totalVialCount[mg] = (totalVialCount[mg] || 0) + count;
-                });
-            };
-
-            let html = `<div class="section-title">計算結果</div>
-                        <p><strong>病人體重：</strong> ${weight} kg</p>
-                        <h3>負荷期（最初 4 週，每週 3 mg/kg）</h3>
-                        <p>總劑量：${totalLoadingDose.toFixed(1)} mg</p>
-                        <p>每週施打：${loadingDose.toFixed(1)} mg，使用：${formatVialCount(calculateVials(loadingDose))}</p>`;
-
+            let loadingVials = calculateVials(loadingDose);
+            let totalLoadingVials = calculateVials(totalLoadingDose);
             let weeklyVials = calculateVials(weeklyDose);
             let biweeklyVials = calculateVials(biweeklyDose);
             let monthlyVials = calculateVials(monthlyDose);
-            addVials(weeklyVials);
-            addVials(biweeklyVials);
-            addVials(monthlyVials);
 
-            html += `<h3>全年總瓶數</h3>
-                     <p>30mg 瓶數：${totalVialCount[30]}</p>
-                     <p>60mg 瓶數：${totalVialCount[60]}</p>`;
+            function formatVialString(vials) {
+                return `${vials[30] || 0} 瓶 × 30mg + ${vials[60] || 0} 瓶 × 60mg`;
+            }
+
+            let totalYearVials = {30: 0, 60: 0};
+            Object.keys(totalLoadingVials).forEach(k => totalYearVials[k] += totalLoadingVials[k]);
+            Object.keys(weeklyVials).forEach(k => totalYearVials[k] += weeklyVials[k] * 48);
+            Object.keys(biweeklyVials).forEach(k => totalYearVials[k] += biweeklyVials[k] * 24);
+            Object.keys(monthlyVials).forEach(k => totalYearVials[k] += monthlyVials[k] * 12);
+
+            let html = `<p><strong>病人體重：</strong> ${weight} kg</p>
+                        <h3>負荷期（最初 4 週，每週 3 mg/kg）</h3>
+                        <p>每週施打：${formatVialString(loadingVials)}</p>
+                        <p>4 週共：${formatVialString(totalLoadingVials)}</p>
+                        <h3>維持期</h3>
+                        <p>每週方案：${formatVialString(weeklyVials)}，每年 48 次</p>
+                        <p>每兩週方案：${formatVialString(biweeklyVials)}，每年 24 次</p>
+                        <p>每四週方案：${formatVialString(monthlyVials)}，每年 12 次</p>
+                        <h3>全年總量</h3>
+                        <p>${formatVialString(totalYearVials)}</p>`;
 
             document.getElementById("result").innerHTML = html;
         }
