@@ -22,22 +22,23 @@
             border-radius: 12px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             max-width: 500px;
+            width: 90%;
             margin: auto;
         }
         h1 {
             color: #E87722;
-            font-size: 28px;
+            font-size: 26px;
             font-weight: bold;
             margin-bottom: 10px;
         }
         #welcome {
-            font-size: 18px;
+            font-size: 16px;
             color: #004E89;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             font-weight: bold;
         }
         .section-title {
-            font-size: 20px;
+            font-size: 18px;
             font-weight: bold;
             color: #004E89;
             margin-top: 15px;
@@ -46,7 +47,7 @@
             text-align: left;
         }
         label {
-            font-size: 18px;
+            font-size: 16px;
             display: block;
             margin: 10px 0;
             text-align: left;
@@ -79,13 +80,35 @@
             text-align: left;
             font-size: 16px;
             background-color: #FFF3E0;
-            padding: 18px;
+            padding: 15px;
             border-radius: 10px;
             border-left: 6px solid #E87722;
+            word-wrap: break-word;
         }
         .highlight {
             color: #D61C4E;
             font-weight: bold;
+        }
+        /* 響應式設計 */
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 22px;
+            }
+            .container {
+                padding: 15px;
+            }
+            input[type="number"] {
+                font-size: 14px;
+                padding: 10px;
+            }
+            button {
+                font-size: 16px;
+                padding: 12px;
+            }
+            .result {
+                font-size: 14px;
+                padding: 12px;
+            }
         }
     </style>
 </head>
@@ -178,13 +201,6 @@
             let html = `<div class="section-title">計算結果</div>
                         <p><strong>病人體重：</strong> ${weight} kg</p>
                         <p><strong>可用劑型：</strong> ${availableVials.join("mg, ")}mg</p>`;
-
-            let loadingCombo = getVialCombination(loadingDose);
-            html += `<p>負荷期（每週 3 mg/kg，連續 4 週）</p>
-                     <p>每週劑量：<span class="highlight">${loadingDose.toFixed(1)} mg</span></p>
-                     <p>建議組合：${formatCombo(loadingCombo.combination)}</p>
-                     <p>每週浪費：<span class="highlight">${loadingCombo.waste.toFixed(1)} mg</span></p>
-                     <p><strong>四週總用量：</strong> <span class="highlight">${loadingCombo.totalVials * 4} 瓶</span>，<strong>總浪費：</strong> <span class="highlight">${(loadingCombo.waste * 4).toFixed(1)} mg</span></p>`;
 
             document.getElementById("result").innerHTML = html;
         }
