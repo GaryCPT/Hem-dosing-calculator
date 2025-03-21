@@ -1,59 +1,135 @@
+# 優化 Hemlibra 劑量計算器 LIFF 版 HTML
+# - 參考 Hemlibra 品牌設計（藍色系、無襯線字體）
+# - 增大標題與文字大小，增加可讀性
+# - 改善按鈕樣式，讓使用體驗更流暢
 
+liff_id = "1657057076-lRRXkP1k"
+
+optimized_html = f"""
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hemlibra 劑量計算器</title>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <style>
+        body {{
+            font-family: 'Arial', sans-serif;
+            background-color: #F2F6FC;
+            color: #003366;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }}
+        h1 {{
+            color: #002A5E;
+            font-size: 26px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }}
+        #welcome {{
+            font-size: 18px;
+            color: #004E89;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }}
+        .container {{
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            margin: auto;
+        }}
+        label {{
+            font-size: 18px;
+            display: block;
+            margin: 10px 0;
+        }}
+        input[type="number"] {{
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-top: 5px;
+        }}
+        button {{
+            background-color: #005BBB;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 18px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 15px;
+            width: 100%;
+        }}
+        button:hover {{
+            background-color: #004999;
+        }}
+        .result {{
+            margin-top: 20px;
+            text-align: left;
+            font-size: 16px;
+        }}
+        .highlight {{
+            color: #D61C4E;
+            font-weight: bold;
+        }}
+    </style>
 </head>
 <body>
-    <h1>Hemlibra 劑量計算器</h1>
-    <p id="welcome" style="font-weight:bold; color:green;"></p>
+    <div class="container">
+        <h1>Hemlibra 劑量計算器</h1>
+        <p id="welcome">載入中...</p>
 
-    <p><strong>步驟一：請勾選您院內可用的劑型（mg/支）</strong></p>
-    <label><input type="checkbox" id="vial30" checked> 30 mg</label>
-    <label><input type="checkbox" id="vial60" checked> 60 mg</label>
+        <h2>步驟一：請選擇可用劑型</h2>
+        <label><input type="checkbox" id="vial30" checked> 30 mg</label>
+        <label><input type="checkbox" id="vial60" checked> 60 mg</label>
 
-    <p><strong>步驟二：請輸入病人體重（公斤）</strong></p>
-    <input type="number" id="weight" placeholder="例如：70" min="1" step="0.1">
-    <button onclick="calculate()">計算劑量</button>
+        <h2>步驟二：請輸入病人體重（公斤）</h2>
+        <input type="number" id="weight" placeholder="例如：70" min="1" step="0.1">
+        <button onclick="calculate()">計算劑量</button>
 
-    <div id="result"></div>
+        <div id="result" class="result"></div>
+    </div>
 
     <script>
-        async function initializeLiff() {
-            await liff.init({ liffId: "1657057076-lRRXkP1k" });
-            if (!liff.isLoggedIn()) {
+        async function initializeLiff() {{
+            await liff.init({{ liffId: "{liff_id}" }});
+            if (!liff.isLoggedIn()) {{
                 liff.login();
-            } else {
+            }} else {{
                 const profile = await liff.getProfile();
-                document.getElementById("welcome").innerText = `歡迎您，${profile.displayName}！`;
-            }
-        }
+                document.getElementById("welcome").innerText = `歡迎您，${{profile.displayName}}！`;
+            }}
+        }}
 
-        window.onload = () => {
+        window.onload = () => {{
             initializeLiff();
-        };
+        }};
 
-        function calculate() {
+        function calculate() {{
             const weight = parseFloat(document.getElementById("weight").value);
             const use30 = document.getElementById("vial30").checked;
             const use60 = document.getElementById("vial60").checked;
 
-            if (isNaN(weight) || weight <= 0) {
+            if (isNaN(weight) || weight <= 0) {{
                 alert("請輸入有效的體重");
                 return;
-            }
-            if (!use30 && !use60) {
+            }}
+            if (!use30 && !use60) {{
                 alert("請至少選擇一種可用劑型");
                 return;
-            }
+            }}
 
             const loadingDose = 3 * weight;
             const maintenanceOptions = [
-                { name: "每週", dose: 1.5 * weight },
-                { name: "每兩週", dose: 3 * weight },
-                { name: "每四週", dose: 6 * weight }
+                {{ name: "每週", dose: 1.5 * weight }},
+                {{ name: "每兩週", dose: 3 * weight }},
+                {{ name: "每四週", dose: 6 * weight }}
             ];
 
             const availableVials = [];
@@ -61,56 +137,63 @@
             if (use60) availableVials.push(60);
             availableVials.sort((a, b) => b - a);
 
-            function getVialCombination(dose) {
+            function getVialCombination(dose) {{
                 let remaining = dose;
-                let vialCount = {};
+                let vialCount = {{}};
                 let totalDose = 0;
-                for (let vial of availableVials) {
+                for (let vial of availableVials) {{
                     let count = Math.floor(remaining / vial);
-                    if (count > 0) {
+                    if (count > 0) {{
                         vialCount[vial] = count;
                         remaining -= count * vial;
                         totalDose += count * vial;
-                    }
-                }
-                if (remaining > 0) {
+                    }}
+                }}
+                if (remaining > 0) {{
                     const smallest = availableVials[availableVials.length - 1];
                     vialCount[smallest] = (vialCount[smallest] || 0) + 1;
                     totalDose += smallest;
-                }
-                return {
+                }}
+                return {{
                     combination: vialCount,
                     totalDose: totalDose,
                     waste: totalDose - dose,
                     totalVials: Object.values(vialCount).reduce((a, b) => a + b, 0)
-                };
-            }
+                }};
+            }}
 
-            function formatCombo(obj) {
-                return Object.entries(obj).map(([mg, count]) => `${count} 瓶 × ${mg}mg`).join(" + ");
-            }
+            function formatCombo(obj) {{
+                return Object.entries(obj).map(([mg, count]) => `<span class="highlight">${{count}} 瓶 × ${{mg}}mg</span>`).join(" + ");
+            }}
 
-            let html = `<h2>結果</h2>
-                        <p><strong>體重：</strong> ${weight} kg</p>
-                        <p><strong>選擇劑型：</strong> ${availableVials.join("mg, ")}mg</p>`;
+            let html = `<h2>計算結果</h2>
+                        <p><strong>病人體重：</strong> ${{weight}} kg</p>
+                        <p><strong>可用劑型：</strong> ${{availableVials.join("mg, ")}}mg</p>`;
 
             let loadingCombo = getVialCombination(loadingDose);
-            html += `<h3>負荷期（每週3 mg/kg，連續4週）</h3>
-                     <p>每週劑量：${loadingDose.toFixed(1)} mg</p>
-                     <p>建議組合：${formatCombo(loadingCombo.combination)}</p>
-                     <p>每週浪費：${loadingCombo.waste.toFixed(1)} mg</p>
-                     <p><strong>四週總用量：</strong> ${loadingCombo.totalVials * 4} 瓶，<strong>總浪費：</strong> ${(loadingCombo.waste * 4).toFixed(1)} mg</p>`;
+            html += `<h3>負荷期（每週 3 mg/kg，連續 4 週）</h3>
+                     <p>每週劑量：<span class="highlight">${{loadingDose.toFixed(1)}} mg</span></p>
+                     <p>建議組合：${{formatCombo(loadingCombo.combination)}}</p>
+                     <p>每週浪費：<span class="highlight">${{loadingCombo.waste.toFixed(1)}} mg</span></p>
+                     <p><strong>四週總用量：</strong> <span class="highlight">${{loadingCombo.totalVials * 4}} 瓶</span>，<strong>總浪費：</strong> <span class="highlight">${{(loadingCombo.waste * 4).toFixed(1)}} mg</span></p>`;
 
             html += `<h3>維持期劑量選項：</h3><ul>`;
-            for (let opt of maintenanceOptions) {
+            for (let opt of maintenanceOptions) {{
                 let combo = getVialCombination(opt.dose);
-                html += `<li>${opt.name}：${opt.dose.toFixed(1)} mg →
-                            ${formatCombo(combo.combination)}，浪費 ${combo.waste.toFixed(1)} mg，共 ${combo.totalVials} 瓶</li>`;
-            }
+                html += `<li>${{opt.name}}：<span class="highlight">${{opt.dose.toFixed(1)}} mg</span> →
+                            ${{formatCombo(combo.combination)}}，浪費 <span class="highlight">${{combo.waste.toFixed(1)}} mg</span>，共 <span class="highlight">${{combo.totalVials}} 瓶</span></li>`;
+            }}
             html += "</ul>";
 
             document.getElementById("result").innerHTML = html;
-        }
+        }}
     </script>
 </body>
 </html>
+"""
+
+file_path = "/mnt/data/index_liff_optimized.html"
+with open(file_path, "w", encoding="utf-8") as f:
+    f.write(optimized_html)
+
+file_path
