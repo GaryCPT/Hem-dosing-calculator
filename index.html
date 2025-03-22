@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="utf-8">
-  <title>Hemlibra 劑量計算機 (大型字體版)</title>
+  <title>Hemlibra 劑量計算機 (調整版)</title>
   <style>
     /* ===== 色彩設計：白、藍、橘 + 30mg藍色, 60mg洋紅色 ===== */
     :root {
@@ -15,7 +15,7 @@
       --color-30mg: #0050B2;      /* 藍色 */
       --color-60mg: #d6007f;      /* 洋紅色 (Magenta) */
 
-      /* 全局字體大小 (此處設定更大字) */
+      /* 全局字體大小 (讓字再大一些) */
       --base-font-size: 20px;
     }
 
@@ -27,7 +27,6 @@
       color: var(--text-color);
       font-family: "Microsoft JhengHei", "Helvetica Neue", Arial, sans-serif;
       font-size: var(--base-font-size);
-      /* line-height 可稍大，增加閱讀舒適度 */
       line-height: 1.4;
     }
 
@@ -49,7 +48,7 @@
 
     /* ===== 主容器 ===== */
     .container {
-      max-width: 800px;
+      max-width: 850px;
       margin: 20px auto;
       padding: 20px;
       background-color: #fefefe;
@@ -75,7 +74,7 @@
     }
     label {
       display: inline-block;
-      min-width: 120px;
+      min-width: 130px;
       margin-bottom: 6px;
       vertical-align: middle;
       font-weight: 600;
@@ -143,8 +142,6 @@
     .result-section th {
       background-color: #f5f5f5;
     }
-
-    /* 30 mg 與 60 mg 欄位上色 (含文字顏色) */
     .col-30mg {
       color: var(--color-30mg);
       font-weight: bold;
@@ -154,11 +151,11 @@
       font-weight: bold;
     }
 
-    .note {
+    .footer-info {
+      text-align: right;
+      margin-top: 20px;
       font-size: 0.9em;
       color: #666;
-      margin-top: 10px;
-      line-height: 1.4;
     }
 
     /* ===== RWD調整 ===== */
@@ -247,6 +244,9 @@
 
     <!-- 複製用按鈕 -->
     <button class="copy-btn" onclick="copyDoseInfo()">複製使用劑量</button>
+
+    <!-- 版本資訊 (固定顯示在結果底部) -->
+    <div class="footer-info" id="versionInfo"></div>
   </div>
 </div>
 
@@ -257,13 +257,18 @@
 let finalData = {
   weight: 0,
   vialOption: '',
-  frequency: '',
+  frequencyText: '',
   loadingTotal30: 0,
   loadingTotal60: 0,
   maintenanceTotal30: 0,
   maintenanceTotal60: 0,
   total30: 0,
-  total60: 0
+  total60: 0,
+  maintenanceTimes: 0,   // 維持期實際施打次數(依48週算)
+  loadingDoseEach: 0,
+  loadingMonthNeed: 0,   // 第一個月需求(4週)
+  maintenanceDoseEach: 0,
+  maintenanceTotalNeed: 0 // 48週總需求
 };
 
 /** findBestVialCombination():
@@ -335,34 +340,36 @@ function calculate() {
   const vialOption = document.querySelector('input[name="vial_option"]:checked').value;
   const frequency = document.getElementById('frequency').value;
 
-  // 2. 負荷期 (Loading)
-  const loadingDoseEach = 3 * weight; // 每週 3 mg/kg
+  // 2. 負荷期 (Loading)：前 4週，每週 3 mg/kg
+  const loadingDoseEach = 3 * weight; // mg/次
   const loadingTimes = 4;
+  const loadingMonthNeed = loadingDoseEach * 4; // 第一個月需求
 
-  // 3. 維持期
+  // 3. 維持期 (Maintenance) 設定：48週
   let maintenanceDoseEach = 0;
   let maintenanceTimes = 0;
-  let freqText = '';
-
+  let frequencyText = '';
+  // 算法: 48 週 / freq
   switch(frequency) {
-    case 'weekly':
+    case 'weekly':       // 每週
       maintenanceDoseEach = 1.5 * weight;
-      maintenanceTimes = 52;
-      freqText = '每週 (1.5 mg/kg)';
+      maintenanceTimes = 48;     // 48 週
+      frequencyText = '每週 (1.5 mg/kg)';
       break;
-    case 'q2w':
+    case 'q2w':          // 每兩週
       maintenanceDoseEach = 3 * weight;
-      maintenanceTimes = 26;
-      freqText = '每兩週 (3 mg/kg)';
+      maintenanceTimes = 48 / 2; // 24
+      frequencyText = '每兩週 (3 mg/kg)';
       break;
-    case 'q4w':
+    case 'q4w':          // 每四週
       maintenanceDoseEach = 6 * weight;
-      maintenanceTimes = 13;
-      freqText = '每四週 (6 mg/kg)';
+      maintenanceTimes = 48 / 4; // 12
+      frequencyText = '每四週 (6 mg/kg)';
       break;
   }
+  const maintenanceTotalNeed = maintenanceDoseEach * maintenanceTimes;
 
-  // 4. 計算負荷期
+  // 4. 計算「負荷期」實際瓶數
   let loadingTotal30 = 0, loadingTotal60 = 0, loadingProvidedMg = 0;
   for (let i = 0; i < loadingTimes; i++) {
     const combo = findBestVialCombination(loadingDoseEach, vialOption);
@@ -371,7 +378,7 @@ function calculate() {
     loadingProvidedMg += combo.totalMg;
   }
 
-  // 5. 計算維持期
+  // 5. 計算「維持期」實際瓶數
   let maintenanceTotal30 = 0, maintenanceTotal60 = 0, maintenanceProvidedMg = 0;
   for (let i = 0; i < maintenanceTimes; i++) {
     const combo = findBestVialCombination(maintenanceDoseEach, vialOption);
@@ -380,27 +387,29 @@ function calculate() {
     maintenanceProvidedMg += combo.totalMg;
   }
 
-  // 6. 合計
+  // 6. 整年合計
   const total30 = loadingTotal30 + maintenanceTotal30;
   const total60 = loadingTotal60 + maintenanceTotal60;
-  const totalProvidedMg = loadingProvidedMg + maintenanceProvidedMg;
-  const realNeeded = (loadingDoseEach * loadingTimes) + (maintenanceDoseEach * maintenanceTimes);
-  const totalWasted = totalProvidedMg - realNeeded;
 
-  // 7. 更新 finalData
+  // 7. 儲存於 finalData (供複製使用)
   finalData = {
     weight,
     vialOption,
-    frequency: freqText,
+    frequencyText,
     loadingTotal30,
     loadingTotal60,
     maintenanceTotal30,
     maintenanceTotal60,
     total30,
-    total60
+    total60,
+    maintenanceTimes,
+    loadingDoseEach,
+    loadingMonthNeed,
+    maintenanceDoseEach,
+    maintenanceTotalNeed
   };
 
-  // 8. 呈現於畫面
+  // 8. 呈現在畫面上
   document.getElementById('result').style.display = 'block';
   const resultContainer = document.getElementById('resultText');
 
@@ -410,13 +419,14 @@ function calculate() {
     '30 mg & 60 mg 均可'
   );
 
+  // 組織 HTML
   const html = `
     <!-- 基本條件 -->
     <table>
       <tr><th colspan="2">基本條件</th></tr>
       <tr>
-        <td>病患體重</td>
-        <td>${weight.toFixed(1)} kg</td>
+        <td>病患體重(kg)</td>
+        <td>${weight.toFixed(1)}</td>
       </tr>
       <tr>
         <td>可用劑型</td>
@@ -424,73 +434,72 @@ function calculate() {
       </tr>
       <tr>
         <td>維持期頻率</td>
-        <td>${freqText}</td>
+        <td>${frequencyText}</td>
       </tr>
     </table>
 
     <!-- 負荷期 -->
     <table>
-      <tr><th colspan="5">負荷期 (Loading)：前 4 週，每週 3 mg/kg</th></tr>
+      <tr><th colspan="4">負荷期 (Loading)：前 4 週，每週 3 mg/kg</th></tr>
       <tr>
         <th>單次需求 (mg)</th>
-        <th>合計需求 (mg)</th>
-        <th class="col-30mg">30 mg</th>
-        <th class="col-60mg">60 mg</th>
-        <th>實際供給 (mg)</th>
+        <th>第一個月需求 (×4) (mg)</th>
+        <th class="col-30mg">30 mg(瓶)</th>
+        <th class="col-60mg">60 mg(瓶)</th>
       </tr>
       <tr>
         <td>${loadingDoseEach.toFixed(1)}</td>
-        <td>${(loadingDoseEach * 4).toFixed(1)}</td>
+        <td>${loadingMonthNeed.toFixed(1)}</td>
         <td class="col-30mg">${loadingTotal30}</td>
         <td class="col-60mg">${loadingTotal60}</td>
-        <td>${loadingProvidedMg}</td>
       </tr>
     </table>
 
     <!-- 維持期 -->
     <table>
-      <tr><th colspan="5">維持期 (Maintenance)</th></tr>
+      <tr><th colspan="5">維持期 (Maintenance) <br> (以 48 週計算)</th></tr>
       <tr>
         <th>單次需求 (mg)</th>
-        <th>一年次數</th>
-        <th class="col-30mg">30 mg</th>
-        <th class="col-60mg">60 mg</th>
-        <th>實際供給 (mg)</th>
+        <th>全年施打次數</th>
+        <th>48週總需求 (mg)</th>
+        <th class="col-30mg">30 mg(瓶)</th>
+        <th class="col-60mg">60 mg(瓶)</th>
       </tr>
       <tr>
         <td>${maintenanceDoseEach.toFixed(1)}</td>
-        <td>${maintenanceTimes}</td>
+        <td>${finalData.maintenanceTimes}</td>
+        <td>${maintenanceTotalNeed.toFixed(1)}</td>
         <td class="col-30mg">${maintenanceTotal30}</td>
         <td class="col-60mg">${maintenanceTotal60}</td>
-        <td>${maintenanceProvidedMg}</td>
       </tr>
     </table>
 
     <!-- 一年合計 -->
     <table>
-      <tr><th colspan="5">一年合計</th></tr>
+      <tr><th colspan="3">一年合計 (含第一個月 + 後續48週)</th></tr>
       <tr>
-        <th>總需求量 (mg)</th>
-        <th>實際供給 (mg)</th>
-        <th>浪費量 (mg)</th>
-        <th class="col-30mg">30 mg</th>
-        <th class="col-60mg">60 mg</th>
+        <th class="col-30mg">30 mg(瓶)</th>
+        <th class="col-60mg">60 mg(瓶)</th>
+        <th>總瓶數</th>
       </tr>
       <tr>
-        <td>${realNeeded.toFixed(1)}</td>
-        <td>${totalProvidedMg}</td>
-        <td>${totalWasted}</td>
         <td class="col-30mg">${total30}</td>
         <td class="col-60mg">${total60}</td>
+        <td>${total30 + total60}</td>
       </tr>
     </table>
-
-    <div class="note">
-      <strong>注意：</strong>此計算假設「每次開瓶後的剩餘藥量無法跨次再使用」。若院內作業容許共用，結果可再調整。
-    </div>
   `;
 
   resultContainer.innerHTML = html;
+  
+  // 加入版本資訊(使用當前日期時間)
+  const now = new Date();
+  const yyyy = now.getFullYear();
+  const mm = String(now.getMonth()+1).padStart(2,'0');
+  const dd = String(now.getDate()).padStart(2,'0');
+  const hh = String(now.getHours()).padStart(2,'0');
+  const min = String(now.getMinutes()).padStart(2,'0');
+  document.getElementById('versionInfo').textContent = `版本：${yyyy}-${mm}-${dd} ${hh}:${min}`;
 }
 
 /**
@@ -500,9 +509,10 @@ function calculate() {
 function copyDoseInfo() {
   const d = finalData;
 
+  // (1) 體重
   let lines = [];
-  // (1) 患者體重
   lines.push(`(1) 患者體重: ${d.weight} kg`);
+
   // (2) 醫院有的劑型
   let optionText = '';
   if (d.vialOption === '60') optionText = '僅 60 mg/vial';
@@ -511,42 +521,45 @@ function copyDoseInfo() {
   lines.push(`(2) 醫院有的劑型: ${optionText}`);
 
   // (3) Loading phase
-  let loadingLine = '(3) Loading Phase: ';
-  let tempArrL = [];
-  if (d.loadingTotal30 > 0) tempArrL.push(`${d.loadingTotal30} 瓶 30mg`);
-  if (d.loadingTotal60 > 0) tempArrL.push(`${d.loadingTotal60} 瓶 60mg`);
-  if (tempArrL.length === 0) {
+  let loadingLine = '(3) Loading Phase (前4週 每週3mg/kg): ';
+  let comboL = [];
+  if (d.loadingTotal30 > 0) comboL.push(`${d.loadingTotal30} 瓶 30mg`);
+  if (d.loadingTotal60 > 0) comboL.push(`${d.loadingTotal60} 瓶 60mg`);
+  if (comboL.length === 0) {
     loadingLine += '無';
   } else {
-    loadingLine += tempArrL.join(' + ');
+    loadingLine += comboL.join(' + ');
   }
   lines.push(loadingLine);
 
   // (4) Maintenance phase
-  let maintenanceLine = '(4) Maintenance Phase: ';
-  let tempArrM = [];
-  if (d.maintenanceTotal30 > 0) tempArrM.push(`${d.maintenanceTotal30} 瓶 30mg`);
-  if (d.maintenanceTotal60 > 0) tempArrM.push(`${d.maintenanceTotal60} 瓶 60mg`);
-  if (tempArrM.length === 0) {
+  let maintenanceLine = `(4) Maintenance Phase (48週, ${d.frequencyText}): `;
+  let comboM = [];
+  if (d.maintenanceTotal30 > 0) comboM.push(`${d.maintenanceTotal30} 瓶 30mg`);
+  if (d.maintenanceTotal60 > 0) comboM.push(`${d.maintenanceTotal60} 瓶 60mg`);
+  if (comboM.length === 0) {
     maintenanceLine += '無';
   } else {
-    maintenanceLine += tempArrM.join(' + ');
+    maintenanceLine += comboM.join(' + ');
   }
   lines.push(maintenanceLine);
 
-  // (5) 年度總量
-  let totalLine = '(5) 總年度申請量: ';
-  let tempArrT = [];
-  if (d.total30 > 0) tempArrT.push(`${d.total30} 瓶 30mg`);
-  if (d.total60 > 0) tempArrT.push(`${d.total60} 瓶 60mg`);
-  if (tempArrT.length === 0) {
+  // (5) 一年合計
+  let totalLine = '(5) 一年合計: ';
+  let comboT = [];
+  if (d.total30 > 0) comboT.push(`${d.total30} 瓶 30mg`);
+  if (d.total60 > 0) comboT.push(`${d.total60} 瓶 60mg`);
+  if (comboT.length === 0) {
     totalLine += '無';
   } else {
-    totalLine += tempArrT.join(' + ');
+    totalLine += comboT.join(' + ');
+    totalLine += ` (總瓶數：${d.total30 + d.total60})`;
   }
   lines.push(totalLine);
 
   const copyText = lines.join('\n');
+  
+  // 嘗試使用 Clipboard API
   if (navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(copyText)
       .then(() => alert('已複製到剪貼簿!'))
@@ -559,7 +572,7 @@ function copyDoseInfo() {
   }
 }
 
-/** 若瀏覽器不支援 clipboard API, 使用 textarea 方案 */
+/** 若瀏覽器不支援 clipboard API, 用 textarea 方式 */
 function manualCopyFallback(text) {
   const textArea = document.createElement("textarea");
   textArea.value = text;
