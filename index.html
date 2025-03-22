@@ -1,185 +1,338 @@
-
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-Hant">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hemlibra 劑量計算器</title>
-    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Noto Sans TC', sans-serif;
-            background-color: #F9F7F3;
-            color: #002A5E;
-            margin: 0;
-            padding: 20px;
-            text-align: center;
-        }
-        .container {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            max-width: 500px;
-            width: 90%;
-            margin: auto;
-        }
-        h1 {
-            color: #E87722;
-            font-size: 26px;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-        #welcome {
-            font-size: 16px;
-            color: #004E89;
-            margin-bottom: 15px;
-            font-weight: bold;
-        }
-        .section-title {
-            font-size: 18px;
-            font-weight: bold;
-            color: #004E89;
-            margin-top: 15px;
-            border-bottom: 2px solid #E87722;
-            padding-bottom: 5px;
-            text-align: left;
-        }
-        label {
-            font-size: 16px;
-            display: block;
-            margin: 10px 0;
-            text-align: left;
-        }
-        input[type="number"] {
-            width: 100%;
-            padding: 12px;
-            font-size: 16px;
-            border: 2px solid #004E89;
-            border-radius: 6px;
-            margin-top: 5px;
-        }
-        button {
-            background-color: #E87722;
-            color: white;
-            border: none;
-            padding: 14px 20px;
-            font-size: 18px;
-            border-radius: 8px;
-            cursor: pointer;
-            margin-top: 15px;
-            width: 100%;
-            font-weight: bold;
-        }
-        button:hover {
-            background-color: #D2651E;
-        }
-        .result {
-            margin-top: 20px;
-            text-align: left;
-            font-size: 16px;
-            background-color: #FFF3E0;
-            padding: 15px;
-            border-radius: 10px;
-            border-left: 6px solid #E87722;
-            word-wrap: break-word;
-        }
-        .highlight {
-            color: #D61C4E;
-            font-weight: bold;
-        }
-        hr {
-            border: none;
-            height: 2px;
-            background: #E87722;
-            margin: 10px 0;
-        }
-    </style>
+  <meta charset="utf-8">
+  <title>Hemlibra 劑量計算工具</title>
+  <style>
+    body {
+      max-width: 800px;
+      margin: 0 auto;
+      font-family: Arial, sans-serif;
+      line-height: 1.5;
+      padding: 20px;
+    }
+    h1, h2 {
+      text-align: center;
+    }
+    .form-section {
+      margin-bottom: 20px;
+      padding: 10px 20px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+    label {
+      display: inline-block;
+      width: 120px;
+      margin-bottom: 8px;
+      vertical-align: top;
+    }
+    select, input[type="number"] {
+      width: 150px;
+      padding: 5px;
+      margin-bottom: 8px;
+    }
+    .radio-group {
+      margin: 8px 0;
+    }
+    button {
+      padding: 8px 16px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .result-section {
+      margin-top: 20px;
+      padding: 15px;
+      border: 1px solid #999;
+      border-radius: 8px;
+      background: #f9f9f9;
+    }
+    .result-section table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    .result-section th,
+    .result-section td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: center;
+    }
+    .note {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 10px;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Hemlibra 劑量計算器</h1>
-        <p id="welcome">載入中...</p>
 
-        <div class="section-title">步驟一：請選擇可用劑型</div>
-        <label><input type="checkbox" id="vial30" checked> 30 mg</label>
-        <label><input type="checkbox" id="vial60" checked> 60 mg</label>
+<h1>Hemlibra 劑量計算工具</h1>
+<p style="text-align:center;">
+  根據健保規範，計算負荷期與維持期所需瓶數並盡量減少浪費。
+</p>
 
-        <div class="section-title">步驟二：請輸入病人體重（公斤）</div>
-        <input type="number" id="weight" placeholder="例如：70" min="1" step="0.1">
+<div class="form-section">
+  <h2>基本資訊輸入</h2>
+  <div>
+    <label for="weight">病患體重(kg)</label>
+    <input type="number" id="weight" min="1" step="0.1" value="75" />
+  </div>
 
-        <button onclick="calculate()">計算劑量</button>
-        <button onclick="resetForm()" style="background-color: #004E89; margin-top: 10px;">重新計算</button>
-        <button onclick="copyResult()" id="copyBtn" style="display:none; background-color: #008CBA; margin-top: 10px;">複製計算結果</button>
+  <div>
+    <label>可用劑型</label>
+    <div class="radio-group">
+      <input type="radio" id="vial60" name="vial_option" value="60" checked />
+      <label for="vial60">僅 60 mg/vial</label><br />
+      
+      <input type="radio" id="vial30" name="vial_option" value="30" />
+      <label for="vial30">僅 30 mg/vial</label><br />
 
-        <div id="result" class="result"></div>
+      <input type="radio" id="vialBoth" name="vial_option" value="both" />
+      <label for="vialBoth">同時有 30 mg & 60 mg</label>
     </div>
+  </div>
 
-    <script>
-        async function initializeLiff() {
-            await liff.init({ liffId: "1657057076-lRRXkP1k" });
-            if (!liff.isLoggedIn()) {
-                liff.login();
-            } else {
-                const profile = await liff.getProfile();
-                document.getElementById("welcome").innerText = `歡迎您，${profile.displayName}！`;
-            }
+  <div>
+    <label for="frequency">維持期頻率</label>
+    <select id="frequency">
+      <option value="weekly">每週 (1.5 mg/kg)</option>
+      <option value="q2w" selected>每兩週 (3 mg/kg)</option>
+      <option value="q4w">每四週 (6 mg/kg)</option>
+    </select>
+  </div>
+
+  <button onclick="calculate()">計 算</button>
+</div>
+
+<div id="result" class="result-section" style="display: none;">
+  <h2>計算結果</h2>
+  <div id="resultText"></div>
+</div>
+
+<script>
+/**
+ * 嘗試在給定可用劑型(30/60/both)的情況下，找出「最少瓶數」且「提供 mg >= 需求 mg」的最佳組合
+ * @param {number} requiredMg - 單次需求 mg
+ * @param {string} vialOption - '60' | '30' | 'both'
+ * @returns {object} { totalMg, vialsUsed, detailText, wastedMg }
+ */
+function findBestVialCombination(requiredMg, vialOption) {
+  let possibleVialSizes = [];
+  if (vialOption === '60') {
+    possibleVialSizes = [60];
+  } else if (vialOption === '30') {
+    possibleVialSizes = [30];
+  } else {
+    // both
+    possibleVialSizes = [30, 60];
+  }
+
+  // 如果只有單一規格，就直接用數量上取整 (Math.ceil)
+  if (possibleVialSizes.length === 1) {
+    const size = possibleVialSizes[0];
+    const count = Math.ceil(requiredMg / size);
+    return {
+      totalMg: count * size,
+      vialsUsed: count,
+      detailText: `${count} 瓶 × ${size} mg = ${count * size} mg`,
+      wastedMg: (count * size) - requiredMg
+    };
+  }
+
+  // 如果同時有 30 mg + 60 mg，嘗試在合ReasonableRange(這裡設0~20)的所有組合中找到浪費最少、瓶數最少的方案
+  let best = null;
+
+  for (let num30 = 0; num30 <= 20; num30++) {
+    for (let num60 = 0; num60 <= 20; num60++) {
+      const totalMg = (num30 * 30) + (num60 * 60);
+      // 若不足需求 mg，跳過
+      if (totalMg < requiredMg) continue;
+
+      const totalVials = num30 + num60;
+      const wasted = totalMg - requiredMg;
+
+      if (best === null) {
+        best = { totalMg, totalVials, num30, num60, wasted };
+      } else {
+        // 比較：先比浪費 mg（越少越好），若浪費相同再比總瓶數（越少越好）
+        if (wasted < best.wasted) {
+          best = { totalMg, totalVials, num30, num60, wasted };
+        } else if (wasted === best.wasted && totalVials < best.totalVials) {
+          best = { totalMg, totalVials, num30, num60, wasted };
         }
+      }
+    }
+  }
 
-        window.onload = () => {
-            initializeLiff();
-        };
+  if (!best) {
+    return {
+      totalMg: 0,
+      vialsUsed: 0,
+      detailText: '找不到足量組合',
+      wastedMg: 0
+    };
+  }
 
-        function calculate() {
-            const weight = parseFloat(document.getElementById("weight").value);
-            const use30 = document.getElementById("vial30").checked;
-            const use60 = document.getElementById("vial60").checked;
+  const detailParts = [];
+  if (best.num60 > 0) detailParts.push(`${best.num60} 瓶 × 60 mg`);
+  if (best.num30 > 0) detailParts.push(`${best.num30} 瓶 × 30 mg`);
 
-            if (isNaN(weight) || weight <= 0) {
-                alert("請輸入有效的體重");
-                return;
-            }
-            if (!use30 && !use60) {
-                alert("請至少選擇一種可用劑型");
-                return;
-            }
+  return {
+    totalMg: best.totalMg,
+    vialsUsed: best.totalVials,
+    detailText: detailParts.join(' + ') + ` = ${best.totalMg} mg`,
+    wastedMg: best.wasted
+  };
+}
 
-            const loadingDose = 3 * weight;
-            const weeklyDose = 1.5 * weight;
-            const biweeklyDose = 3 * weight;
-            const monthlyDose = 6 * weight;
+/**
+ * 主計算流程
+ */
+function calculate() {
+  // 1. 取得使用者輸入
+  const weight = parseFloat(document.getElementById('weight').value) || 0;
+  if (weight <= 0) {
+    alert('請輸入正確的體重數值');
+    return;
+  }
+  const vialOption = document.querySelector('input[name="vial_option"]:checked').value;
+  const frequency = document.getElementById('frequency').value;
 
-            function calculateVials(dose, times) {
-                let totalVials = {30: 0, 60: 0};
-                if (use60) totalVials[60] = Math.floor(dose / 60);
-                dose -= totalVials[60] * 60;
-                if (use30) totalVials[30] = Math.ceil(dose / 30);
-                totalVials[30] *= times;
-                totalVials[60] *= times;
-                return totalVials;
-            }
+  // 2. 計算負荷期 (Loading)
+  // 每週 3 mg/kg，連續 4 週
+  const loadingDoseEach = 3 * weight;  // mg/次
+  const loadingTimes = 4;             // 4週
 
-            let weeklyVials = calculateVials(weeklyDose, 48);
-            let biweeklyVials = calculateVials(biweeklyDose, 24);
-            let monthlyVials = calculateVials(monthlyDose, 12);
+  // 3. 維持期 (Maintenance)
+  let maintenanceDoseEach = 0;
+  let maintenanceTimes = 0;
+  let freqText = '';
+  
+  switch(frequency) {
+    case 'weekly': // 每週 1.5 mg/kg
+      maintenanceDoseEach = 1.5 * weight;
+      maintenanceTimes = 52;
+      freqText = '每週 (1.5 mg/kg)';
+      break;
+    case 'q2w': // 每兩週 3 mg/kg
+      maintenanceDoseEach = 3 * weight;
+      maintenanceTimes = 26;
+      freqText = '每兩週 (3 mg/kg)';
+      break;
+    case 'q4w': // 每四週 6 mg/kg
+      maintenanceDoseEach = 6 * weight;
+      maintenanceTimes = 13;
+      freqText = '每四週 (6 mg/kg)';
+      break;
+  }
 
-            let html = `<p><strong>病人體重：</strong> ${weight} kg</p><hr>
-                        <h3>負荷期（最初 4 週，每週 3 mg/kg）</h3>
-                        <p>每週施打：_ 瓶 × 30mg + _ 瓶 × 60mg</p>
-                        <p>4 週共：_ 瓶 × 30mg + _ 瓶 × 60mg</p><hr>
-                        <h3>維持期</h3>
-                        <p>每週方案：_ 瓶 × 30mg + _ 瓶 × 60mg，每年 48 次</p>
-                        <p>每兩週方案：_ 瓶 × 30mg + _ 瓶 × 60mg，每年 24 次</p>
-                        <p>每四週方案：_ 瓶 × 30mg + _ 瓶 × 60mg，每年 12 次</p><hr>
-                        <h3>全年總量</h3>
-                        <p>每週方案: _ 瓶 × 30mg + _ 瓶 × 60mg</p>
-                        <p>每兩週方案: _ 瓶 × 30mg + _ 瓶 × 60mg</p>
-                        <p>每四週方案: _ 瓶 × 30mg + _ 瓶 × 60mg</p>`;
+  // 4. 逐次計算「負荷期」的瓶數
+  let loadingTotalVials = 0;
+  let loadingTotalProvidedMg = 0;
+  for (let i = 0; i < loadingTimes; i++) {
+    const combo = findBestVialCombination(loadingDoseEach, vialOption);
+    loadingTotalVials += combo.vialsUsed;
+    loadingTotalProvidedMg += combo.totalMg;
+  }
 
-            document.getElementById("result").innerHTML = html;
-            document.getElementById("copyBtn").style.display = "block";
-        }
-    </script>
+  // 5. 逐次計算「維持期」的瓶數 (一年)
+  let maintenanceTotalVials = 0;
+  let maintenanceTotalProvidedMg = 0;
+  for (let i = 0; i < maintenanceTimes; i++) {
+    const combo = findBestVialCombination(maintenanceDoseEach, vialOption);
+    maintenanceTotalVials += combo.vialsUsed;
+    maintenanceTotalProvidedMg += combo.totalMg;
+  }
+
+  // 6. 總結
+  const totalVials = loadingTotalVials + maintenanceTotalVials;
+  const totalProvidedMg = loadingTotalProvidedMg + maintenanceTotalProvidedMg;
+  const realNeeded = (loadingDoseEach * loadingTimes) + (maintenanceDoseEach * maintenanceTimes);
+  const totalWasted = totalProvidedMg - realNeeded;
+
+  // 7. 組合輸出
+  let html = `
+    <table>
+      <tr><th colspan="2">基本條件</th></tr>
+      <tr>
+        <td>病患體重</td>
+        <td>${weight} kg</td>
+      </tr>
+      <tr>
+        <td>可用劑型</td>
+        <td>${
+          vialOption === '60' ? '僅 60 mg/vial' :
+          vialOption === '30' ? '僅 30 mg/vial' : 
+          '30 mg & 60 mg 均可'
+        }</td>
+      </tr>
+      <tr>
+        <td>維持期頻率</td>
+        <td>${freqText}</td>
+      </tr>
+    </table>
+
+    <table>
+      <tr><th colspan="5">負荷期 (Loading)：前 4 週，每週 3 mg/kg</th></tr>
+      <tr>
+        <td>單次需求 (mg)</td>
+        <td>總次數</td>
+        <td>合計需求 (mg)</td>
+        <td>負荷期合計 瓶數</td>
+        <td>負荷期實際供給 (mg)</td>
+      </tr>
+      <tr>
+        <td>${loadingDoseEach.toFixed(1)}</td>
+        <td>${loadingTimes}</td>
+        <td>${(loadingDoseEach*loadingTimes).toFixed(1)}</td>
+        <td>${loadingTotalVials}</td>
+        <td>${loadingTotalProvidedMg}</td>
+      </tr>
+    </table>
+
+    <table>
+      <tr><th colspan="5">維持期 (Maintenance)</th></tr>
+      <tr>
+        <td>單次需求 (mg)</td>
+        <td>一年次數</td>
+        <td>合計需求 (mg/年)</td>
+        <td>維持期合計 瓶數</td>
+        <td>維持期實際供給 (mg)</td>
+      </tr>
+      <tr>
+        <td>${maintenanceDoseEach.toFixed(1)}</td>
+        <td>${maintenanceTimes}</td>
+        <td>${(maintenanceDoseEach*maintenanceTimes).toFixed(1)}</td>
+        <td>${maintenanceTotalVials}</td>
+        <td>${maintenanceTotalProvidedMg}</td>
+      </tr>
+    </table>
+
+    <table>
+      <tr><th colspan="4">一年合計</th></tr>
+      <tr>
+        <td>實際需求總量 (mg)</td>
+        <td>實際供給總量 (mg)</td>
+        <td>浪費量 (mg)</td>
+        <td>總瓶數</td>
+      </tr>
+      <tr>
+        <td>${realNeeded.toFixed(1)}</td>
+        <td>${totalProvidedMg}</td>
+        <td>${totalWasted}</td>
+        <td>${totalVials}</td>
+      </tr>
+    </table>
+
+    <div class="note">
+      <strong>注意：</strong>此計算假設「每次開瓶後的剩餘藥量無法跨次再使用」。若有院內作業可共享部分未使用藥量，結果可能不同。
+    </div>
+  `;
+
+  document.getElementById('resultText').innerHTML = html;
+  document.getElementById('result').style.display = 'block';
+}
+</script>
+
 </body>
 </html>
