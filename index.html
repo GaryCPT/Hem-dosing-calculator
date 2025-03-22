@@ -2,18 +2,34 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="utf-8">
-  <title>Hemlibra 劑量計算機（客製版）</title>
+  <title>Hemlibra 劑量計算機 (僅顯示 60mg 瓶)</title>
   <style>
-    body {
-      margin: 0; 
-      padding: 0;
-      font-family: "Microsoft JhengHei", Arial, sans-serif;
-      background-color: #FAFAFA;
+    /* ===== 色彩設計：白、藍、橘 + 字體放大，以方便手機使用 ===== */
+    :root {
+      --main-bg: #f8f8f8;
+      --main-blue: #0050B2;
+      --main-orange: #ff7000;
+      --text-color: #333;
+      --color-60mg: #d6007f;   /* 60 mg 顯示用的洋紅色 */
+      --base-font-size: 20px;  /* 整體字體大小 */
     }
-    h1, h2 {
+
+    html, body {
       margin: 0;
       padding: 0;
+      background-color: var(--main-bg);
+      color: var(--text-color);
+      font-family: "Microsoft JhengHei", Arial, sans-serif;
+      font-size: var(--base-font-size);
+      line-height: 1.4;
+    }
+    h1 {
+      margin: 0;
+      padding: 20px;
       text-align: center;
+      background-color: var(--main-blue);
+      color: #fff;
+      font-size: 1.8em;
     }
     .container {
       max-width: 800px;
@@ -23,142 +39,299 @@
       box-shadow: 0 2px 6px rgba(0,0,0,0.15);
       padding: 20px;
     }
+
+    /* ===== 表單區塊 ===== */
+    .form-section {
+      margin-bottom: 20px;
+      padding: 15px;
+      border: 2px solid var(--main-orange);
+      border-radius: 10px;
+      background-color: #fff;
+    }
+    .form-section h2 {
+      margin-top: 0;
+      margin-bottom: 10px;
+      font-size: 1.3em;
+      color: var(--main-orange);
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: inline-block;
+      min-width: 130px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      vertical-align: middle;
+    }
+    input[type="number"], select {
+      width: 180px;
+      padding: 8px 10px;
+      margin-left: 5px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 1em;
+    }
+    .radio-group {
+      margin: 8px 0;
+    }
+    .radio-group label {
+      margin-left: 5px;
+      font-weight: normal;
+      line-height: 1.2;
+    }
+
+    .calc-btn {
+      background-color: var(--main-blue);
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 20px;
+      border: none;
+      font-size: 1em;
+      cursor: pointer;
+      outline: none;
+      transition: background-color 0.3s ease;
+    }
+    .calc-btn:hover {
+      background-color: #003B85;
+    }
+
+    /* ===== 結果區塊 ===== */
+    .result-section {
+      margin-top: 20px;
+      padding: 15px;
+      border: 2px solid var(--main-orange);
+      border-radius: 10px;
+      background-color: #ffffff;
+    }
+    .result-section h2 {
+      margin: 0 0 15px 0;
+      font-size: 1.4em;
+      color: var(--main-blue);
+    }
     table {
       width: 100%;
       border-collapse: collapse;
-      margin: 18px 0;
+      margin-bottom: 20px;
     }
     th, td {
       border: 1px solid #ccc;
       text-align: center;
       padding: 10px;
-      font-size: 18px;
+      font-size: 1em;
     }
     th {
       background-color: #f5f5f5;
     }
-    .heading {
-      color: #0050B2;
-      margin-top: 0;
-      font-size: 24px;
-      text-align: left;
-      padding-bottom: 10px;
-      border-bottom: 3px solid #ff7000;
-    }
-    .blue {
-      color: #0050B2;  /* 30 mg 顏色 (如果有需要) */
-    }
-    .magenta {
-      color: #d6007f;  /* 60 mg 顏色 */
+    .col-60mg {
+      color: var(--color-60mg);
+      font-weight: bold;
     }
     .section-title {
       font-weight: bold;
-      font-size: 20px;
-      text-align: left;
+      font-size: 1.2em;
+      margin-bottom: 8px;
       color: #333;
-      margin-top: 30px;
     }
-    .row-title {
-      text-align: left;
-      background-color: #f5f5f5;
-      font-weight: bold;
-    }
-    .note {
-      font-size: 14px;
-      color: #666;
-      margin-top: 10px;
-      line-height: 1.4;
+
+    /* ===== RWD (手機) ===== */
+    @media (max-width: 600px) {
+      .container {
+        margin: 10px;
+        padding: 10px;
+      }
+      label {
+        display: block;
+        margin-bottom: 4px;
+      }
+      input[type="number"], select {
+        width: 100%;
+        margin: 0 0 10px 0;
+      }
+      table, thead, tbody, th, td, tr {
+        display: block;
+        width: 100%;
+      }
+      th, td {
+        text-align: left;
+        padding: 10px;
+      }
     }
   </style>
 </head>
 <body>
 
+<h1>Hemlibra 劑量計算機</h1>
+
 <div class="container">
-  <h1>Hemlibra 劑量計算結果</h1>
 
-  <!-- 基本條件 -->
-  <table>
-    <tr><th colspan="2">基本條件</th></tr>
-    <tr>
-      <td>病患體重(kg)</td>
-      <td>75.0</td>
-    </tr>
-    <tr>
-      <td>可用劑型</td>
-      <td>僅 60 mg/vial</td>
-    </tr>
-    <tr>
-      <td>維持期頻率</td>
-      <td>每兩週 (3 mg/kg)</td>
-    </tr>
-  </table>
+  <!-- ===== 使用者輸入區 ===== -->
+  <div class="form-section">
+    <h2>輸入參數</h2>
+    <div class="form-group">
+      <label for="weight">病患體重(kg)</label>
+      <input type="number" id="weight" min="1" step="0.1" value="75" />
+    </div>
 
-  <!-- Loading Phase -->
-  <div class="section-title">負荷期 (Loading)：前 4 週，每週 3 mg/kg</div>
-  <table>
-    <tr>
-      <th class="row-title">每次使用</th>
-      <th class="magenta">60 mg(瓶)</th>
-    </tr>
-    <tr>
-      <td>4 瓶</td>
-      <td>4</td>
-    </tr>
-  </table>
-  <table>
-    <tr>
-      <th class="row-title">第一個月使用</th>
-      <th class="magenta">60 mg(瓶)</th>
-    </tr>
-    <tr>
-      <td>4 週 × 4 瓶</td>
-      <td>16</td>
-    </tr>
-  </table>
+    <div class="form-group">
+      <label for="frequency">維持期頻率</label>
+      <select id="frequency">
+        <option value="q2w" selected>每兩週 (3 mg/kg)</option>
+        <option value="weekly">每週 (1.5 mg/kg)</option>
+        <option value="q4w">每四週 (6 mg/kg)</option>
+      </select>
+    </div>
 
-  <!-- Maintenance Phase -->
-  <div class="section-title">維持期 (Maintenance)（以 48 週計算）</div>
-  <table>
-    <tr>
-      <th class="row-title">每次使用</th>
-      <th class="magenta">60 mg(瓶)</th>
-    </tr>
-    <tr>
-      <td>4 瓶</td>
-      <td>4</td>
-    </tr>
-  </table>
-  <table>
-    <tr>
-      <th class="row-title">本次申請 (48週) 使用</th>
-      <th class="magenta">60 mg(瓶)</th>
-    </tr>
-    <tr>
-      <!-- 48 週 / 每兩週施打 → 24 次 × 4 瓶/次 = 96 瓶 -->
-      <td>24 次 × 4 瓶</td>
-      <td>96</td>
-    </tr>
-  </table>
-
-  <!-- 一年合計 -->
-  <div class="section-title">一年合計 (含第一個月 + 後續48週)</div>
-  <table>
-    <tr>
-      <th class="magenta">60 mg(瓶)</th>
-      <!-- 需求：不再顯示「總瓶數」 -->
-    </tr>
-    <tr>
-      <td>112</td>  <!-- 16 + 96 -->
-    </tr>
-  </table>
-
-  <!-- 如需備註，可保留或移除此段 -->
-  <!--
-  <div class="note">
-    若有任何疑問，請與藥局或醫護人員確認。
+    <!-- 固定假設：「僅 60 mg/vial」 -->
+    <button class="calc-btn" onclick="calculate()">計算</button>
   </div>
-  -->
+
+  <!-- ===== 結果呈現區 ===== -->
+  <div id="result" class="result-section" style="display: none;">
+    <h2>計算結果</h2>
+    <div id="resultContent"></div>
+  </div>
+
 </div>
+
+<script>
+/**
+ * 本程式假設只有 60 mg/vial 可以使用。
+ * 1. Loading phase: 前 4週 (每週 3 mg/kg)
+ * 2. Maintenance: 48週 (依使用者選擇: 每週/每兩週/每四週)
+ *    - 每週 → 1.5 mg/kg → 共 48 次
+ *    - 每兩週 → 3 mg/kg → 共 24 次
+ *    - 每四週 → 6 mg/kg → 共 12 次
+ * 
+ * 計算完成後，以指定的表格形式顯示：
+ *  - Loading: "每次使用 60 mg(瓶)" & "第一個月使用 60 mg(瓶)"
+ *  - Maintenance: "每次使用 60 mg(瓶)" & "本次申請 (48週) 使用 60 mg(瓶)"
+ *  - 一年合計 (含第一個月 + 48週) -> 60 mg(瓶)
+ */
+
+function calculate() {
+  const weight = parseFloat(document.getElementById('weight').value) || 0;
+  if (weight <= 0) {
+    alert('請輸入正確的體重數值');
+    return;
+  }
+  const freq = document.getElementById('frequency').value;
+
+  // 1. Loading phase
+  //   - 每週 3 mg/kg, 連續4週
+  const loadingDoseEach = 3 * weight;   // mg/次
+  // 計算「每次需要幾瓶 60 mg」
+  // 60 mg vials => 向上取整
+  const eachUsageLoadingVials = Math.ceil(loadingDoseEach / 60);
+  // 整個月(4週)的瓶數 = eachUsageLoadingVials * 4
+  const monthlyLoadingVials = eachUsageLoadingVials * 4;
+
+  // 2. Maintenance (48週)
+  let singleDose, times, freqText;
+  if (freq === 'weekly') {
+    singleDose = 1.5 * weight; // mg
+    times = 48;                // 48 次 (48週)
+    freqText = '每週 (1.5 mg/kg)';
+  } else if (freq === 'q2w') {
+    singleDose = 3 * weight;   // mg
+    times = 48 / 2;            // 24 次
+    freqText = '每兩週 (3 mg/kg)';
+  } else {
+    singleDose = 6 * weight;   // mg
+    times = 48 / 4;            // 12 次
+    freqText = '每四週 (6 mg/kg)';
+  }
+  const eachUsageMaintVials = Math.ceil(singleDose / 60);
+  const totalMaintVials = eachUsageMaintVials * times;
+
+  // 3. 一年合計 (Loading + Maintenance)
+  //   - 這裡「一年合計」僅顯示 60 mg(瓶)，無總瓶數欄
+  const yearTotalVials = monthlyLoadingVials + totalMaintVials;
+
+  // 4. 排版顯示
+  //   - 以使用者需求的形式：Loading (每次/每月)、Maintenance (每次/48週)、一年合計(60 mg)
+  const html = `
+    <!-- 基本條件 -->
+    <table>
+      <tr><th colspan="2">基本條件</th></tr>
+      <tr>
+        <td>病患體重(kg)</td>
+        <td>${weight.toFixed(1)}</td>
+      </tr>
+      <tr>
+        <td>可用劑型</td>
+        <td>僅 60 mg/vial</td>
+      </tr>
+      <tr>
+        <td>維持期頻率</td>
+        <td>${freqText}</td>
+      </tr>
+    </table>
+
+    <!-- Loading Phase -->
+    <div class="section-title">負荷期 (Loading)：前 4 週，每週 3 mg/kg</div>
+    <table>
+      <tr>
+        <th>每次使用</th>
+        <th class="col-60mg">60 mg(瓶)</th>
+      </tr>
+      <tr>
+        <td>${eachUsageLoadingVials} 瓶</td>
+        <td>${eachUsageLoadingVials}</td>
+      </tr>
+    </table>
+
+    <table>
+      <tr>
+        <th>第一個月使用</th>
+        <th class="col-60mg">60 mg(瓶)</th>
+      </tr>
+      <tr>
+        <td>4 週 × ${eachUsageLoadingVials} 瓶</td>
+        <td>${monthlyLoadingVials}</td>
+      </tr>
+    </table>
+
+    <!-- Maintenance Phase -->
+    <div class="section-title">維持期 (Maintenance)（以 48 週計算）</div>
+    <table>
+      <tr>
+        <th>每次使用</th>
+        <th class="col-60mg">60 mg(瓶)</th>
+      </tr>
+      <tr>
+        <td>${eachUsageMaintVials} 瓶</td>
+        <td>${eachUsageMaintVials}</td>
+      </tr>
+    </table>
+
+    <table>
+      <tr>
+        <th>本次申請 (48週) 使用</th>
+        <th class="col-60mg">60 mg(瓶)</th>
+      </tr>
+      <tr>
+        <td>${times} 次 × ${eachUsageMaintVials} 瓶</td>
+        <td>${totalMaintVials}</td>
+      </tr>
+    </table>
+
+    <!-- 一年合計 (無最右方總瓶數) -->
+    <div class="section-title">一年合計 (含第一個月 + 後續48週)</div>
+    <table>
+      <tr>
+        <th class="col-60mg">60 mg(瓶)</th>
+      </tr>
+      <tr>
+        <td>${yearTotalVials}</td>
+      </tr>
+    </table>
+  `;
+
+  document.getElementById('resultContent').innerHTML = html;
+  document.getElementById('result').style.display = 'block';
+}
+</script>
 
 </body>
 </html>
