@@ -34,10 +34,10 @@
     }
 
     .container {
-      max-width: 850;
-      margin: 20 auto;
+      max-width: 850px;
+      margin: 20px auto;
       background: #fff;
-      border-radius: 10;
+      border-radius: 10px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.15);
       padding: 20px;
     }
@@ -200,10 +200,28 @@
         <option value="q2w" selected>每兩週 (3 mg/kg) - 共24次</option>
         <option value="q4w">每四週 (6 mg/kg) - 共12次</option>
       </select>
-    </div>
-      <!-- 用<small> 並以 display:block; margin-top; color:#F04E2B; 使其在下一行、紅字 -->
-      <small stype="display: block; margin-top: 6px; color:#F04E2B; font-size: 0.5em;">
+
+      <!-- 第一句: 字體大小 50%、橘色、有底線 -->
+      <small style="
+        display: block;
+        margin-top: 6px;
+        color: var(--main-orange);
+        font-size: 0.5em;
+        text-decoration: underline;
+      ">
         (本計算依產品仿單用法用量，協助計算每次施打/申請所需藥品瓶數)
+      </small>
+
+      <!-- 第二句: 字體大小 25%、橘色、靠右、斜體；動態放入當前時間 -->
+      <small id="updateTime" style="
+        display: block;
+        margin-top: 4px;
+        text-align: right;
+        color: var(--main-orange);
+        font-size: 0.25em;
+        font-style: italic;
+      ">
+        <!-- JS 動態插入 "最後更新時間: yyyy-mm-dd HH:MM" -->
       </small>
     </div>
 
@@ -222,14 +240,26 @@
 
 <script>
 /* 
- * 全域資料，計算完後儲存給"複製使用劑量"功能使用 
- * 包含:
- *   weight, vialOption, freqText
- *   eachLoad_30, eachLoad_60, totalLoad_30, totalLoad_60
- *   eachMaint_30, eachMaint_60, totalMaint_30, totalMaint_60
- *   year30, year60
+ * === 全域資料: 計算完後儲存給 "複製使用劑量" 功能使用 ===
+ * 包含: weight, vialOption, freqText, eachLoad_30, eachLoad_60, ...
  */
 let calcData = {};
+
+/**
+ * === DOM 載入後, 動態填入 "最後更新時間" ===
+ */
+window.addEventListener('DOMContentLoaded', () => {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, '0');
+  const d = String(now.getDate()).padStart(2, '0');
+  const hh = String(now.getHours()).padStart(2, '0');
+  const mm = String(now.getMinutes()).padStart(2, '0');
+
+  const timeString = `${y}-${m}-${d} ${hh}:${mm}`;
+  const updateTimeEl = document.getElementById('updateTime');
+  updateTimeEl.textContent = `最後更新時間：${timeString}`;
+});
 
 /**
  * findBestVialCombination(requiredMg, vialOption):
@@ -243,7 +273,6 @@ function findBestVialCombination(requiredMg, vialOption) {
   } else if (vialOption === '60') {
     possibleVials = [60];
   } else {
-    // both
     possibleVials = [30, 60];
   }
 
@@ -263,14 +292,15 @@ function findBestVialCombination(requiredMg, vialOption) {
   let best = null;
   for (let c30 = 0; c30 <= 20; c30++) {
     for (let c60 = 0; c60 <= 20; c60++) {
-      let total = c30 * 30 + c60 * 60;
+      const total = c30 * 30 + c60 * 60;
       if (total < requiredMg) continue;
-      let wasted = total - requiredMg;
-      let totalVials = c30 + c60;
+      const wasted = total - requiredMg;
+      const totalVials = c30 + c60;
 
       if (!best) {
         best = { vial30: c30, vial60: c60, totalMg: total, wastedMg: wasted, totalVials };
       } else {
+        // 比較浪費量 -> 瓶數
         if (wasted < best.wastedMg) {
           best = { vial30: c30, vial60: c60, totalMg: total, wastedMg: wasted, totalVials };
         } else if (wasted === best.wastedMg && totalVials < best.totalVials) {
@@ -280,7 +310,6 @@ function findBestVialCombination(requiredMg, vialOption) {
     }
   }
   if (!best) {
-    // 理論上不會發生
     return { vial30: 0, vial60: 0, totalMg: 0, wastedMg: 0 };
   }
   return {
@@ -301,10 +330,10 @@ function calculate() {
   const vialOption = document.querySelector('input[name="vial_option"]:checked').value;
   const freq = document.getElementById('frequency').value;
 
-  // 2. Loading phase: 前4週，每週 3 mg/kg
+  // 2. Loading phase: 前4週, 每週 3 mg/kg
   const loadingDoseEach = 3 * weight;
   const comboLoad = findBestVialCombination(loadingDoseEach, vialOption);
-  // 4週 -> ×4
+  // 4週 → ×4
   const total30_LoadMonth = comboLoad.vial30 * 4;
   const total60_LoadMonth = comboLoad.vial60 * 4;
 
@@ -331,7 +360,7 @@ function calculate() {
   const year30 = total30_LoadMonth + total30_Maint;
   const year60 = total60_LoadMonth + total60_Maint;
 
-  // 5. 儲存於全域物件 calcData
+  // 5. 儲存於全域物件 calcData, 供複製用
   calcData = {
     weight,
     vialOption,
@@ -483,7 +512,7 @@ function copyDoseInfo() {
   const maintTotalLine = formatBottle(d.totalMaint_30, d.totalMaint_60);
   lines.push(`   本次申請(48週) => ${maintTotalLine}`);
 
-  // (5) 一年合計
+  // (5) 一年合計:
   lines.push("(5) 一年合計:");
   const yearLine = formatBottle(d.year30, d.year60);
   lines.push(`   ${yearLine}`);
